@@ -42,10 +42,17 @@ sample.dataframe
 
 # Question 9
 
-new.row <- data.frame(char.col="Kodak",factor.col=101,numeric.col=20,date.col=as.Date("2014-11-01"))
+# First I figured out how to use rbind to adding a row with existing factor values:
+new.row <- data.frame(char.col="Kodak",factor.col=103,numeric.col=20,date.col=as.Date("2014-11-01"))
 sample.dataframe <- rbind(sample.dataframe, new.row)
-sample.dataframe
-# I can't figure out how to add a new factor value to this dataframe.  :-(
+
+# Adding a new factor value '104':
+new.row <- data.frame(char.col="Little",factor.col2=104,numeric.col=20,date.col=as.Date("2014-12-01"))
+factor.col2 <- factor(sample.dataframe$factor.col,levels=c(levels(sample.dataframe$factor.col),104))
+sample.dataframe <- data.frame(char.col=sample.dataframe$char.col, factor.col2,numeric.col=sample.dataframe$numeric.col, date.col=sample.dataframe$date.col)
+sample.dataframe <- rbind(sample.dataframe, new.row)
+# I feel like I used a really convoluted way to do this so I would love to check out the solution when it's available.
+
 
 # Question 10
 
@@ -80,7 +87,7 @@ for (i in 1:(n*t)) {
 }
 A
 # The answer, using above is $1821.36 BUT it does matters exactly where you round.  If you use the above rounding then you get $0.04 cents less but I bet this is how banks calculate it :-)
-# 
+# If you round at the end instad of every month you get $1821.40.
 
 
 # Question 15
@@ -97,6 +104,7 @@ for (i in 1:10) {
   result <- result + 2^i
 }
 result
+# answer is 2046
 
 # Question 17
 
@@ -107,10 +115,12 @@ while (i > 0) {
   i <- i - 1
 }
 result
+# answer is 2046
 
 # Question 18
 
 sum(2^(c(1:10)))
+# answer is 2046
 
 # Question 19
 
@@ -123,14 +133,27 @@ x <- rep(c("example"),times=10)
 x
 
 # Question 21
+#  Ok, so I stole this from the assignment due in a few days since I was trying to stay ahead of the curve:
 
-# Assuming a, b, c are defined already
-
-if ((b^2 - 4*a*c) < 0)
+quadratic <- function(a,b,c)
 {
-  print("Discriminant < 0 means there are only imaginary solutions")
-} else
-{
-  root1 = (-b + sqrt(b^2 - 4*a*c)) / (2*a)
-  root2 = (-b - sqrt(b^2 - 4*a*c)) / (2*a)  
+  print(sprintf("Quadratic Coefficients are: A = %s, B = %s and C = %s", a,b,c))
+  
+  if ((b^2 - 4*a*c) < 0)
+  {
+    print("No real solutions as discriminant < 0 means there are only imaginary solutions")
+  } else if ((b^2 - 4*a*c) == 0)
+  {
+    root1 = -b/(2*a)
+    print(sprintf("One real solution: %s",root1))
+  } else
+  {
+    root1 = (-b + sqrt(b^2 - 4*a*c)) / (2*a)
+    root2 = (-b - sqrt(b^2 - 4*a*c)) / (2*a)  
+    print(sprintf("Two real solutions: %s and %s", root1, root2))
+  }
 }
+
+quadratic(1,2,3) # No Real Solutions
+quadratic(1,2,1) # One Real Solution
+quadratic(1,3,2) # Two Real Solutions
