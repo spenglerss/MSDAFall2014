@@ -74,6 +74,7 @@ numbrs
 
 # Question 4
 
+# I actually have two solutions.  This was my first:
 pythag <- function(f,g,h)
 {
   if ((f >= g) & (f >= h))
@@ -95,3 +96,19 @@ pythag <- function(f,g,h)
 }
 pythag(1,2,3)
 pythag(3,4,5)
+
+# I then realized that all of that could be very easily simplified with one compound logical comparison:
+pythag2 <- function(f,g,h)
+{
+  
+  triple <- ((f^2 == (g^2 + h^2)) | (g^2 == (f^2 + h^2)) | (h^2 == (f^2 + g^2)))
+  
+  if (triple)
+    sprintf("The numbers %s, %s and %s ARE pythagorean triples.",f,g,h)
+  else
+    sprintf("The numbers %s, %s and %s are NOT pythagorean triples.",f,g,h)
+  
+}
+
+pythag2(1,2,3)
+pythag2(4,3,5)
