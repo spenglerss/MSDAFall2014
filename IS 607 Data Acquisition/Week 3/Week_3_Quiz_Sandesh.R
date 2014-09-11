@@ -61,8 +61,9 @@ evaluateQ5 <- function(x,y)
 
 # Question 6
 
-location1 <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/Week 3/week-3-make-model-data.csv"
-location2 <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/Week 3/week-3-price-data.csv"
+#Linking to my github to make it easier:
+location1 <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/Week%203/week-3-make-model-data.csv"
+location2 <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/Week%203/week-3-price-data.csv"
 
 make.model.data <- read.table(file = location1, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 price.data <-read.table(file = location2, header = TRUE, sep = ",", stringsAsFactors = FALSE)
