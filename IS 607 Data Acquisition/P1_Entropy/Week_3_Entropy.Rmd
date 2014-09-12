@@ -79,8 +79,8 @@ infogain <- function (d, a)
     x <- table(a, d)                                    # (3)
     y <- (x / rowSums(x))                               # (4)
     y <- y * ifelse(is.infinite(log2(y)),0,log2(y))     # (5)
-    z <- rowSums(x) / sum(rowSums(x))                   # (6)
-    entropy.a <- sum(z * -1 * rowSums(y))               # (6)
+    z <- rowSums(x) / sum(x)                            # (6)
+    entropy.a <- sum(z * -1 * rowSums(y))               # (7)
   
     infogain <- entropy.d - entropy.a
   }
@@ -115,7 +115,9 @@ To be less abstract, for ```d <- dataset$answer``` and ```a <- dataset$attr1``` 
 table(dataset$attr1, dataset$answer)
 ```
 
- **(4)** In the way I've constructed this table, you will notice that the sum of the rows are the total frequecy of the partitions a.j   I use this fact to figure out the proabilities P(aj|di)  (or is the notation P(di|aj)?)  simply by dividing each element by the sum of the row.  Or in my code, ```(x / rowSums(x))```.
+ **(4)** In the way I've constructed this table, you will notice that the sum of the rows are the total frequecy of the partitions a.j: ![alt text][table_pic2]
+ 
+I use this fact to figure out the proabilities P(aj|di)  (or is the notation P(di|aj)?)  simply by dividing each element by the sum of the row.  Or in my code, ```(x / rowSums(x))```.
 
 Continuing our example using ```dataset$answer``` and ```dataset$attr1```, you get:
 ```{r, echo=FALSE} 
@@ -126,7 +128,7 @@ i
 
 **(5)** Now that we have the right probabilities, we just multiply by the log base 2 of them respectively as the entropy equation states.
 
-Here you'll notice that I put a special case for when the probability is 0.  log2(0) is infinity so I catch it here and set it to 0.  One case where this will happen is if d and a are the same vector.
+Here you'll notice that I put a special case for when the probability is 0 because log2(0) is infinity.  So the ifelse catches it here and replaces it with 0.  One case where this will happen is if d and a are the same vector.
 
 Using ```dataset$answer``` and ```dataset$attr1``` we get:
 ```{r, echo=FALSE} 
@@ -134,27 +136,35 @@ i <- i * ifelse(is.infinite(log2(i)),0,log2(i))
 i
 ```
 
-**_Notice now that we've changed the values of the table from being the Frequency to being the components of E(a.i)!!!  Therefore, the sum of the rows, ```rowSums(y)```, will now give you E(a.i)._**
+**_Notice now that table x has the frequencies and table y has the component pieces of E(a.j)!!_**  Therefore, ```rowSums(y)```, will now give you E(a.i)._  This fact will be useful in (7).
 
-**(6)**  Now, all we have to do is multiply the entropies of a over d by the weighted average of each partition of a.  I did this in two steps.  First, ```rowSums(x) / sum(rowSums(x)``` gives you the weights of each partition. If you remember from just above that ```rowSums(y)``` is each of the entropies then you'll see that ```sum(z * -1 * rowSums(y))``` multiplies the entropies by the weights and added them. (Oh and negative is done as well).
+**(6)** We need one last thing which is the weights for E(a.j).  Since table x still holds the frequencies, the weights are simply ```rowSums(x) / sum(x)```
 
-Weights for a:
+
+
+**(7)*** What does ```sum(z * -1 * rowSums(y))``` do?  Well, since ```rowSums(y)``` is the entropy for a.j or E(a.j) and z has the weights, multiplying the two, taking the negative of it and summing it up will give you the total entropy of d given a or E(d,a).  
+
+I did this in two steps.  First,  gives you the weights of each partition. If you remember from just above that ```rowSums(y)``` is each of the entropies then you'll see that ```sum(z * -1 * rowSums(y))``` multiplies the entropies by the weights and added them. (Oh and negative is done as well).
+
+Examples for (6) & (7):
+
+Entropies E(a.j) or ```rowSums(y)```
+```{r, echo=FALSE}
+rowSums(i)
+```
+
+Weights (stored in table z):
 ```{r,echo=FALSE}
 j <- rowSums(h) / sum(rowSums(h))
 j
 ```
-Entropies:
-```{r, echo=FALSE}
-rowSums(i)
-```
+
 Above two are multiplied & added and negated to get to the final total:
 ```{r, echo=FALSE}
 sum(j * rowSums(i) * -1)
 ```
 
-**(7)** And the final step is to simply return the E(d) - E(d,a)
-
-Examples asked for in the assignment:
+Examples asked for in the assignment (apaprently R-Markdown rounds a little differently than the RStudio console):
 
 ```infogain(dataset$answer,dataset$attr1)```  = `r (infogain(dataset$answer,dataset$attr1))`
 
@@ -188,3 +198,4 @@ decide <- function(inputDF, col)
 
 
 [table_pic]: https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/table_pic.JPG
+[table_pic2]: https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/table_pic2.JPG
