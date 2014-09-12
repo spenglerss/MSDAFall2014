@@ -1,0 +1,63 @@
+
+# Sandesh Sadalge IS 607 Project 1 - Entropy
+
+#location.data <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
+location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
+
+dataset <- read.table(file = location.data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+
+entropy <- function (d)
+{
+  # So I figured out that using table() makes the Entropy calculations much easier!
+  # (Originally, I was going to use unique to figure out hte distinct values in a vector and a loop or something to count the occurances, etc...)
+  
+  partitions <- table(d)  # For a vector, this gives you all the unique values and their frequency
+  partitions <- partitions / sum(partitions) # Replace table values with the probability for each of the partition values
+  partitions <- partitions * log2(partitions) # This is the Entropy formula pieces Prob * log2(prob)
+  entropy <- -sum(partitions)
+  
+  
+}
+
+infogain <- function (d, a)
+{
+  if (all(d==a) == TRUE)
+  {
+    infogain <- 0 
+  } else
+  {
+    # Total Entropy for d:
+    entropy.d <- entropy(d)
+  
+    x <- table(a, d) # Cols = d partitions & rows = a partitions
+    y <- (x / rowSums(x))  # Each row now has prob of a paritions given d partition
+    y <- y * ifelse(is.infinite(log2(y)),0,log2(y))  # Now, -rowSums(y) is the Entropy for the a partition
+    z <- rowSums(x) / sum(rowSums(x))  # This is calcualtes the probabilities of the partitions a over all the values
+    entropy.a <- sum(z * -1 * rowSums(y))
+  
+    infogain <- entropy.d - entropy.a
+  }
+}
+
+decide <- function(inputDF, col)
+{
+  decideDF <- data.frame(colnames=colnames(inputDF))
+  n <- length(decideDF$colnames)
+  infogain.values <- rep(0, n)
+  for (i in 1:n)
+  {
+    infogain.values[i] <- infogain(inputDF[,col], inputDF[,i])
+  }
+  
+  decideDF <- data.frame(colnames=decideDF$colnames,infogain=infogain.values)
+  
+  decide <- list(max=which.max(infogain.values), gains=decideDF)
+
+}
+
+
+(entropy(dataset$answer))
+
+(infogain(dataset$answer, dataset$attr1))
+
+(decide(dataset,4))
