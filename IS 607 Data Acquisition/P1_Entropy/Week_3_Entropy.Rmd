@@ -1,13 +1,174 @@
 ---
-title: "Week_3_Entropy"
+title: "Week 3 Entropy Project"
 author: "Sandesh Sadalge"
 date: "Thursday, September 11, 2014"
-output: html_document
 ---
+
+**Dataset**
 
 I put the data into my github directory to make things easier:
 
 ```{r}
 location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
 dataset <- read.table(file = location.data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+```
+***
+**A)** Create the __entropy()__ function:
+
+Here is my final function code.  Explanations underneath.
+
+```{r}
+entropy <- function (d)
+{
+  partitions <- table(d)                        # (1)
+  partitions <- partitions / sum(partitions)    # (2)
+  partitions <- partitions * log2(partitions)   # (3)
+  entropy <- -sum(partitions)                   # (4)
+}
+```
+
+**(1)** Determining categorical partitions and their frequencies:
+
+Initially, the hard part for me was coming up with a way to determine a given vector's categorical partitions and their frequencies.
+
+My first thoughts started down the path of either trying to convert to factor or using _unique()_ to get the distinct categorical values and then I would use a loop to figure out the frequency.  I realized this was probably a very _'un-R'_ way to do it.
+
+Fortunately, I came across **_table()_** which seemed to do exactly what I was looking for. The code: ```partitions <- table(d) ``` gives you a table with the distinct values & respective frequencies of the input vector, d.
+
+As an example, in our dataset, ```table(tabledataset$answer)``` returns:
+```{r, echo=FALSE} 
+table(dataset$answer)
+```
+
+**(2)** Thanks to the fact that R is a vectorized language, ```partitions <- partitions / sum(partitions)``` determines the probability of each of the partitions.
+
+Again, for our example on ```table(tabledataset$answer)``` you get:
+```{r, echo=FALSE} 
+p <- table(dataset$answer)
+p <- p / sum(p)
+p
+```
+
+**(3)** Similarly, ```partitions <- partitions * log2(partitions)``` gives you the calculation in the Entropy equation,  probability * log2(probability).
+```{r, echo=FALSE} 
+p <- p * log2(p)
+p
+```
+
+***(4)*** And lastly, we just take the negative sum of the terms: ```entropy <- -sum(partitions)```
+```{r, echo=FALSE} 
+-sum(p)
+```
+***
+
+**B)** Create the __infogain()__ function
+
+Here's the code:
+
+```{r}
+infogain <- function (d, a)
+{
+  if (all(d==a) == TRUE)                                # (1)
+  {
+    infogain <- 0 
+  } else
+  {
+    entropy.d <- entropy(d)                             # (2)
+    
+    x <- table(a, d)                                    # (3)
+    y <- (x / rowSums(x))                               # (4)
+    y <- y * ifelse(is.infinite(log2(y)),0,log2(y))     # (5)
+    z <- rowSums(x) / sum(rowSums(x))                   # (6)
+    entropy.a <- sum(z * -1 * rowSums(y))               # (6)
+  
+    infogain <- entropy.d - entropy.a
+  }
+}
+```
+
+**(1)** This is one of those pieces of code that one puts in in the end when you realize of a special case that needs to be taken care of.  Basically, if the d and a vectors are the same vector, technically, the infogain should be 0.  You don't 'gain' anything for the same partition, right?
+
+**(2)** inforgain is the E(d) - E(d,a).  Since we already defined a function to get entropy, we can simply get the E(d) using ```entropy(d).
+
+As a reminder, for ```d <- dataset$answer``` you get the following entropy:
+```{r,echo=FALSE}
+(entropy(dataset$answer))
+```
+
+**(3)** Ok, so using the _table()_ function again.  Now, the column headers will be the partitions of d and the row headers will be the partitions of a.
+
+Again, for ```d <- dataset$answer``` and ```a <- dataset$attr1``` you get the following table:
+```{r, echo=FALSE} 
+table(dataset$attr1, dataset$answer)
+```
+The top 0 & 1 are from ```dataset$answer``` and the LEFT 0 & 1 are from dataset$attr1```
+
+**(4)** In the above table, you can see that the sum of the rows is the total frequency of the partitions of vector a.  Therefore, the probability we need to use for the entropy equation is each value divived by that row's total.  Which is what ```(x / rowSums(x))``` does.
+
+e.g. using ```dataset$answer``` and ```dataset$attr1```:
+```{r, echo=FALSE} 
+h <- table(dataset$attr1, dataset$answer)
+i <- h / rowSums(h)
+i
+```
+
+**(5)** Now that we have the right probabilities, we just multiply by the log base 2 of them respectively as the entropy equation states.
+
+Here you'll notice that I put a special case for when the probability is 0.  log2(0) is infinity so I catch it here and set it to 0.  One case where this will happen is if d and a are the same vector.
+
+e.g. using ```dataset$answer``` and ```dataset$attr1```:
+```{r, echo=FALSE} 
+i <- i * ifelse(is.infinite(log2(i)),0,log2(i))
+i
+```
+
+Notice now that ```rowSums(y)``` will give you each of the entropy for each of the partitions of a over d.
+
+**(6)**  Now, all we have to do is multiply the entropies of a over d by the weighted average of each partition of a.  I did this in two steps.  First, ```rowSums(x) / sum(rowSums(x)``` gives you the weights of each partition. If you remember from just above that ```rowSums(y)``` is each of the entropies then you'll see that ```sum(z * -1 * rowSums(y))``` multiplies the entropies by the weights and added them. (Oh and negative is done as well).
+
+Weights for a:
+```{r,echo=FALSE}
+j <- rowSums(h) / sum(rowSums(h))
+j
+```
+Entropies:
+```{r, echo=FALSE}
+rowSums(i)
+```
+Above two are multiplied & added and negated to get to the final total:
+```{r, echo=FALSE}
+sum(j * rowSums(i) * -1)
+```
+
+**(7)** And the final step is to simply return the E(d) - E(d,a)
+
+Examples asked for in the assignment:
+
+```infogain(dataset$answer,dataset$attr1)```  = `r (infogain(dataset$answer,dataset$attr1))`
+
+```infogain(dataset$answer,dataset$attr2)``` = `r (infogain(dataset$answer,dataset$attr2))`
+
+```infogain(dataset$answer,dataset$attr3)``` = `r (infogain(dataset$answer,dataset$attr3))`
+
+***
+
+**C)** Create the **decide()** function
+
+Here's the code:
+
+```{r}
+decide <- function(inputDF, col)
+{
+  decideDF <- data.frame(colnames=colnames(inputDF))
+  n <- length(decideDF$colnames)
+  infogain.values <- rep(0, n)
+  for (i in 1:n)
+  {
+    infogain.values[i] <- infogain(inputDF[,col], inputDF[,i])
+  }
+  
+  decideDF <- data.frame(colnames=decideDF$colnames,infogain=infogain.values)
+  
+  decide <- list(max=which.max(infogain.values), gains=decideDF)
+}
 ```

@@ -15,8 +15,6 @@ entropy <- function (d)
   partitions <- partitions / sum(partitions) # Replace frequency the probability by dividing frequency by total count
   partitions <- partitions * log2(partitions)
   entropy <- -sum(partitions)
-  
-  
 }
 
 infogain <- function (d, a)
