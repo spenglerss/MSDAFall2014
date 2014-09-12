@@ -88,12 +88,29 @@ infogain <- function (d, a)
 
 **(1)** This is one of those pieces of code that one puts in in the end when you realize of a special case that needs to be taken care of.  Basically, if the d and a vectors are the same vector, technically, the infogain should be 0.  You don't 'gain' anything for the same partition, right?
 
-**(2)** inforgain is the E(d) - E(d,a).  Since we already defined a function to get entropy, we can simply get the E(d) using ```entropy(d).
+**Note on explanations below:** I wish I could put together a video or something to explain how I'm caluclating the probabilities and entropy using tables but I'll try by best to explain using my limited R-Markdown abilities:
 
-As a reminder, for ```d <- dataset$answer``` you get the following entropy:
+Say you have a vector d with partitions d.i where i = 1 ... N and you have another vector a with partitions a.j  where j = 1 ... K.  
+
+Infogain, I(d,a) = E(d) - E(d,a).  You can get E(d) using the first function created which is what I did in **(2)*** using ```entropy(d)```. 
+
+As an example, you get the following entropy for ```entropy(d)``` where d <- dataset$answer:
 ```{r,echo=FALSE}
 (entropy(dataset$answer))
 ```
+
+But how do you get E(d,a)?
+
+My solution uses _table()_ to again create a 2 way table whose column names are d.i and row names are a.j.  the value (a.j,d.i) equals the _frequency of the partitions a.j & d.i_
+
+Something like this:
+
+
+
+
+
+
+
 
 **(3)** Ok, so using the _table()_ function again.  Now, the column headers will be the partitions of d and the row headers will be the partitions of a.
 

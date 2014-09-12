@@ -113,9 +113,14 @@ dataset &lt;- read.table(file = location.data, header = TRUE, sep = &quot;,&quot
   }
 }</code></pre>
 <p><strong>(1)</strong> This is one of those pieces of code that one puts in in the end when you realize of a special case that needs to be taken care of. Basically, if the d and a vectors are the same vector, technically, the infogain should be 0. You don’t ‘gain’ anything for the same partition, right?</p>
-<p><strong>(2)</strong> inforgain is the E(d) - E(d,a). Since we already defined a function to get entropy, we can simply get the E(d) using ```entropy(d).</p>
-<p>As a reminder, for <code>d &lt;- dataset$answer</code> you get the following entropy:</p>
+<p><strong>Note on explanations below:</strong> I wish I could put together a video or something to explain how I’m caluclating the probabilities and entropy using tables but I’ll try by best to explain using my limited R-Markdown abilities:</p>
+<p>Say you have a vector d with partitions d.i where i = 1 … N and you have another vector a with partitions a.j where j = 1 … K.</p>
+<p>Infogain, I(d,a) = E(d) - E(d,a). You can get E(d) using the first function created which is what I did in <strong>(2)</strong>* using <code>entropy(d)</code>.</p>
+<p>As an example, you get the following entropy for <code>entropy(d)</code> where d &lt;- dataset$answer:</p>
 <pre><code>## [1] 0.9833</code></pre>
+<p>But how do you get E(d,a)?</p>
+<p>My solution uses <em>table()</em> to again create a 2 way table whose column names are d.i and row names are a.j. the value (a.j,d.i) equals the <em>frequency of the partitions a.j &amp; d.i</em></p>
+<p>Something like this:</p>
 <p><strong>(3)</strong> Ok, so using the <em>table()</em> function again. Now, the column headers will be the partitions of d and the row headers will be the partitions of a.</p>
 <p>Again, for <code>d &lt;- dataset$answer</code> and <code>a &lt;- dataset$attr1</code> you get the following table:</p>
 <pre><code>##    

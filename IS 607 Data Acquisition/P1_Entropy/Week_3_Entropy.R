@@ -1,8 +1,8 @@
 
 # Sandesh Sadalge IS 607 Project 1 - Entropy
 
-location.data <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
-#location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
+#location.data <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
+location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
 
 dataset <- read.table(file = location.data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
