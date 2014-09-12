@@ -1,19 +1,19 @@
 
 # Sandesh Sadalge IS 607 Project 1 - Entropy
 
-#location.data <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
-location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
+location.data <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
+#location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
 
 dataset <- read.table(file = location.data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
 entropy <- function (d)
 {
   # So I figured out that using table() makes the Entropy calculations much easier!
-  # (Originally, I was going to use unique to figure out hte distinct values in a vector and a loop or something to count the occurances, etc...)
+  # (Originally, I was going to use unique to figure out the distinct values in a vector and a loop or something to count the occurances, etc...)
   
-  partitions <- table(d)  # For a vector, this gives you all the unique values and their frequency
-  partitions <- partitions / sum(partitions) # Replace table values with the probability for each of the partition values
-  partitions <- partitions * log2(partitions) # This is the Entropy formula pieces Prob * log2(prob)
+  partitions <- table(d)  # Table gives you all the unique categorigal values and its frequency.
+  partitions <- partitions / sum(partitions) # Replace frequency the probability by dividing frequency by total count
+  partitions <- partitions * log2(partitions)
   entropy <- -sum(partitions)
   
   
@@ -31,9 +31,9 @@ infogain <- function (d, a)
   
     x <- table(a, d) # Cols = d partitions & rows = a partitions
     y <- (x / rowSums(x))  # Each row now has prob of a paritions given d partition
-    y <- y * ifelse(is.infinite(log2(y)),0,log2(y))  # Now, -rowSums(y) is the Entropy for the a partition
-    z <- rowSums(x) / sum(rowSums(x))  # This is calcualtes the probabilities of the partitions a over all the values
-    entropy.a <- sum(z * -1 * rowSums(y))
+    y <- y * ifelse(is.infinite(log2(y)),0,log2(y))
+    z <- rowSums(x) / sum(rowSums(x))  # This is calcualtes the probabilities of the partitions
+    entropy.a <- sum(z * -1 * rowSums(y))  # -rowSums(y) = entropy of the partition and z has the weights so multiplying it gives you the weighte entropy
   
     infogain <- entropy.d - entropy.a
   }
@@ -52,7 +52,6 @@ decide <- function(inputDF, col)
   decideDF <- data.frame(colnames=decideDF$colnames,infogain=infogain.values)
   
   decide <- list(max=which.max(infogain.values), gains=decideDF)
-
 }
 
 
