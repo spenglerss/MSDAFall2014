@@ -1,0 +1,13 @@
+---
+title: "Week_3_Entropy"
+author: "Sandesh Sadalge"
+date: "Thursday, September 11, 2014"
+output: html_document
+---
+
+I put the data into my github directory to make things easier:
+
+```{r}
+location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
+dataset <- read.table(file = location.data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+```
