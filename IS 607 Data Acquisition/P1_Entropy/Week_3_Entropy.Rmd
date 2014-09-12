@@ -9,6 +9,7 @@ date: "Thursday, September 11, 2014"
 I put the data into my github directory to make things easier:
 
 ```{r}
+#location.data <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
 location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
 dataset <- read.table(file = location.data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 ```
@@ -92,37 +93,31 @@ infogain <- function (d, a)
 
 Say you have a vector d with partitions d.i where i = 1 ... N and you have another vector a with partitions a.j  where j = 1 ... K.  
 
-Infogain, I(d,a) = E(d) - E(d,a).  You can get E(d) using the first function created which is what I did in **(2)*** using ```entropy(d)```. 
+Infogain, I(d,a) = E(d) - E(d,a).  You can get E(d) using the first function created which is what I did in **(2)** using ```entropy(d)```. 
 
-As an example, you get the following entropy for ```entropy(d)``` where d <- dataset$answer:
+As an example, you get the following entropy for ```entropy(dataset$answer)```:
 ```{r,echo=FALSE}
 (entropy(dataset$answer))
 ```
 
-But how do you get E(d,a)?
+_But how do you get E(d,a)?_
 
 My solution uses _table()_ to again create a 2 way table whose column names are d.i and row names are a.j.  the value (a.j,d.i) equals the _frequency of the partitions a.j & d.i_
 
 Something like this:
 
+![alt text][table_pic]
 
+Which is what **(3)** does using ```table(a, d)```
 
-
-
-
-
-
-**(3)** Ok, so using the _table()_ function again.  Now, the column headers will be the partitions of d and the row headers will be the partitions of a.
-
-Again, for ```d <- dataset$answer``` and ```a <- dataset$attr1``` you get the following table:
+To be less abstract, for ```d <- dataset$answer``` and ```a <- dataset$attr1``` you get the following table:
 ```{r, echo=FALSE} 
 table(dataset$attr1, dataset$answer)
 ```
-The top 0 & 1 are from ```dataset$answer``` and the LEFT 0 & 1 are from dataset$attr1```
 
-**(4)** In the above table, you can see that the sum of the rows is the total frequency of the partitions of vector a.  Therefore, the probability we need to use for the entropy equation is each value divived by that row's total.  Which is what ```(x / rowSums(x))``` does.
+ **(4)** In the way I've constructed this table, you will notice that the sum of the rows are the total frequecy of the partitions a.j   I use this fact to figure out the proabilities P(aj|di)  (or is the notation P(di|aj)?)  simply by dividing each element by the sum of the row.  Or in my code, ```(x / rowSums(x))```.
 
-e.g. using ```dataset$answer``` and ```dataset$attr1```:
+Continuing our example using ```dataset$answer``` and ```dataset$attr1```, you get:
 ```{r, echo=FALSE} 
 h <- table(dataset$attr1, dataset$answer)
 i <- h / rowSums(h)
@@ -133,13 +128,13 @@ i
 
 Here you'll notice that I put a special case for when the probability is 0.  log2(0) is infinity so I catch it here and set it to 0.  One case where this will happen is if d and a are the same vector.
 
-e.g. using ```dataset$answer``` and ```dataset$attr1```:
+Using ```dataset$answer``` and ```dataset$attr1``` we get:
 ```{r, echo=FALSE} 
 i <- i * ifelse(is.infinite(log2(i)),0,log2(i))
 i
 ```
 
-Notice now that ```rowSums(y)``` will give you each of the entropy for each of the partitions of a over d.
+**_Notice now that we've changed the values of the table from being the Frequency to being the components of E(a.i)!!!  Therefore, the sum of the rows, ```rowSums(y)```, will now give you E(a.i)._**
 
 **(6)**  Now, all we have to do is multiply the entropies of a over d by the weighted average of each partition of a.  I did this in two steps.  First, ```rowSums(x) / sum(rowSums(x)``` gives you the weights of each partition. If you remember from just above that ```rowSums(y)``` is each of the entropies then you'll see that ```sum(z * -1 * rowSums(y))``` multiplies the entropies by the weights and added them. (Oh and negative is done as well).
 
@@ -189,3 +184,7 @@ decide <- function(inputDF, col)
   decide <- list(max=which.max(infogain.values), gains=decideDF)
 }
 ```
+
+
+
+[table_pic]: https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/table_pic.JPG
