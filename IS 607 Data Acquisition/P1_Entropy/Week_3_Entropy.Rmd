@@ -2,6 +2,7 @@
 title: "Week 3 Entropy Project"
 author: "Sandesh Sadalge"
 date: "Fri, Sept 12, 2014"
+output: html_document
 ---
 
 **Dataset**
@@ -17,7 +18,15 @@ options(RCurlOptions = list(cainfo = system.file("CurlSSL", "cacert.pem", packag
 fileLoc <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
 dataset <- read.csv(text = getURL(fileLoc))
 ```
+
+Obligatory summary information of the dataset.  I think str() gives you a little more informative output for our purposes:
+```{r}
+head(dataset, n=5)
+str(dataset)
+```
+
 ***
+
 **A)** Create the __entropy()__ function:
 
 Here is my final function code.  Explanations follow.
