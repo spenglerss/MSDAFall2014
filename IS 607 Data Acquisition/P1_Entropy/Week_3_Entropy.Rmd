@@ -1,22 +1,26 @@
 ---
 title: "Week 3 Entropy Project"
 author: "Sandesh Sadalge"
-date: "Thursday, September 11, 2014"
+date: "Fri, Sept 12, 2014"
 ---
 
 **Dataset**
 
-I put the data into my github directory to make things easier:
+I put the data into my github directory to make things easier.  Need to load a package before I can get it from github with this R-Markdown.
+
+```{r, echo=FALSE} 
+library(RCurl)
+options(RCurlOptions = list(cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl")))
+```
 
 ```{r}
-#location.data <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
-location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
-dataset <- read.table(file = location.data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+fileLoc <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
+dataset <- read.csv(text = getURL(fileLoc))
 ```
 ***
 **A)** Create the __entropy()__ function:
 
-Here is my final function code.  Explanations underneath.
+Here is my final function code.  Explanations follow.
 
 ```{r}
 entropy <- function (d)
@@ -32,25 +36,23 @@ entropy <- function (d)
 
 Initially, the hard part for me was coming up with a way to determine a given vector's categorical partitions and their frequencies.
 
-My first thoughts started down the path of either trying to convert to factor or using _unique()_ to get the distinct categorical values and then I would use a loop to figure out the frequency.  I realized this was probably a very _'un-R'_ way to do it.
+My first thoughts started down the path of either trying to convert to factor or using _unique()_ to get the distinct categorical values and perhaps then using a loop to figure out the frequency.  I realized this was probably a very _'un-R'_ way to do it.
 
-Fortunately, I came across **_table()_** which seemed to do exactly what I was looking for. The code: ```partitions <- table(d) ``` gives you a table with the distinct values & respective frequencies of the input vector, d.
-
-As an example, in our dataset, ```table(tabledataset$answer)``` returns:
+Fortunately, I came across **_table()_** which seemed to do exactly what I was looking for. The code: ```partitions <- table(d) ``` gives you a table with the distinct values & respective frequencies of the input vector, d. As an example, in our dataset, ```table(dataset$answer)``` returns:
 ```{r, echo=FALSE} 
 table(dataset$answer)
 ```
 
-**(2)** Thanks to the fact that R is a vectorized language, ```partitions <- partitions / sum(partitions)``` determines the probability of each of the partitions.
+**(2)** Thanks to the fact that R is a vectorized language, ```partitions <- partitions / sum(partitions)``` determines the probability of each of the partitions (based on frequency counts).
 
-Again, for our example on ```table(tabledataset$answer)``` you get:
+Again, inr our example on ```table(dataset$answer)```, when you do this, you get:
 ```{r, echo=FALSE} 
 p <- table(dataset$answer)
 p <- p / sum(p)
 p
 ```
 
-**(3)** Similarly, ```partitions <- partitions * log2(partitions)``` gives you the calculation in the Entropy equation,  probability * log2(probability).
+**(3)** Similarly, ```partitions <- partitions * log2(partitions)``` gives you the individual calculation within the summation notation of the Entropy equation,  probability * log2(probability).
 ```{r, echo=FALSE} 
 p <- p * log2(p)
 p
@@ -87,36 +89,38 @@ infogain <- function (d, a)
 }
 ```
 
-**(1)** This is one of those pieces of code that one puts in in the end when you realize of a special case that needs to be taken care of.  Basically, if the d and a vectors are the same vector, technically, the infogain should be 0.  You don't 'gain' anything for the same partition, right?
+**(1)** ```if (all(d==a) == TRUE)``` This is one of those pieces of code that one puts in after you've started testing and you realize there's a special case that needs to be taken care of.  I explain this much more fully in note 3 in the next function creation, decide().  Basically, if the d and a vectors are the same, the infogain should be 0.  You don't 'gain' anything for the same partition, right?
 
-**Note on explanations below:** I wish I could put together a video or something to explain how I'm caluclating the probabilities and entropy using tables but I'll try by best to explain using my limited R-Markdown abilities:
+**Note on explanations below:** I wish I could put together a video or something to explain how I'm calculating the probabilities and entropies using tables but I'll try by best to explain using my limited R-Markdown abilities & some pictures I made in Excel:
 
-Say you have a vector d with partitions d.i where i = 1 ... N and you have another vector a with partitions a.j  where j = 1 ... K.  
+Say you have a vector **d** with partitions **d**._i_ where _i = 1 ... N_ and another vector **a** with partitions **a**._j_  where _j = 1 ... K_. Then, the infogain, **I(d,a) = E(d) - E(d,a)**.
 
-Infogain, I(d,a) = E(d) - E(d,a).  You can get E(d) using the first function created which is what I did in **(2)** using ```entropy(d)```. 
+You can get E(d) using the first function created which is what I did in **(2)** using ```entropy(d)```. 
 
-As an example, you get the following entropy for ```entropy(dataset$answer)```:
+As a reminder, you get the following entropy for ```entropy(dataset$answer)```:
 ```{r,echo=FALSE}
 (entropy(dataset$answer))
 ```
 
-_But how do you get E(d,a)?_
+**_But how do you get E(d,a)?_**
 
-My solution uses _table()_ to again create a 2 way table whose column names are d.i and row names are a.j.  the value (a.j,d.i) equals the _frequency of the partitions a.j & d.i_
+I realized later that I could've created another function called ```entropy(d,a)``` to do this but I opted to put the code withint the infogain() function instead. 
+
+My solution uses _table()_ again to create a 2 way table whose column names are **d**._i_ and row names are **a**._j_.  the value **(a.j,d.i)** equals the _frequency of the partitions **a.j & d.i**_
 
 Something like this:
 
 ![alt text][table_pic]
 
-Which is what **(3)** does using ```table(a, d)```
+This is what line **(3)** does using ```table(a, d)```
 
 To be less abstract, for ```d <- dataset$answer``` and ```a <- dataset$attr1``` you get the following table:
 ```{r, echo=FALSE} 
 table(dataset$attr1, dataset$answer)
 ```
 
- **(4)** In the way I've constructed this table, you will notice that the sum of the rows are the total frequecy of the partitions a.j: ![alt text][table_pic2]
- 
+ **(4)** In how I've constructed this table, you will notice that the sum of the rows are the total frequecy of the partitions **a**._j_: ![alt text][table_pic2]
+
 I use this fact to figure out the proabilities P(aj|di)  (or is the notation P(di|aj)?)  simply by dividing each element by the sum of the row.  Or in my code, ```(x / rowSums(x))```.
 
 Continuing our example using ```dataset$answer``` and ```dataset$attr1```, you get:
@@ -125,10 +129,11 @@ h <- table(dataset$attr1, dataset$answer)
 i <- h / rowSums(h)
 i
 ```
+_Notice that the sum for each of the rows is 1._
 
-**(5)** Now that we have the right probabilities, we just multiply by the log base 2 of them respectively as the entropy equation states.
+**(5)** Now that we have the probabilities, we just multiply by the log base 2 of each one respectively as the entropy equation states.
 
-Here you'll notice that I put a special case for when the probability is 0 because log2(0) is infinity.  So the ifelse catches it here and replaces it with 0.  One case where this will happen is if d and a are the same vector.
+Here you'll notice that I put a special case using ```ifelse``` for when log2() is infinity. One case where this will happen is if d and a are the same vector.
 
 Using ```dataset$answer``` and ```dataset$attr1``` we get:
 ```{r, echo=FALSE} 
@@ -136,15 +141,14 @@ i <- i * ifelse(is.infinite(log2(i)),0,log2(i))
 i
 ```
 
-**_Notice now that table x has the frequencies and table y has the component pieces of E(a.j)!!_**  Therefore, ```rowSums(y)```, will now give you E(a.i)._  This fact will be useful in (7).
+**_Notice, after line (5), table x has the frequencies and table y has the component pieces of E(a.j)!!_**  Therefore, ```rowSums(y)```, will now give you E(a.i).  This fact will be useful in **(7)**.
 
-**(6)** We need one last thing which is the weights for E(a.j).  Since table x still holds the frequencies, the weights are simply ```rowSums(x) / sum(x)```
+**(6)** We need one last thing which is the weights for E(a.j).  Since table x still holds the frequencies, the weights are simply ```rowSums(x) / sum(x)``` which I put into **z**.
 
+**(7)*** What does ```sum(z * -1 * rowSums(y))``` do?  Well, since ```rowSums(y)``` is the entropy for E(a.j) and z has the weights for a.j, multiplying the two, taking the negative of it and summing it up will give you the total entropy E(d,a).  
 
-
-**(7)*** What does ```sum(z * -1 * rowSums(y))``` do?  Well, since ```rowSums(y)``` is the entropy for a.j or E(a.j) and z has the weights, multiplying the two, taking the negative of it and summing it up will give you the total entropy of d given a or E(d,a).  
-
-I did this in two steps.  First,  gives you the weights of each partition. If you remember from just above that ```rowSums(y)``` is each of the entropies then you'll see that ```sum(z * -1 * rowSums(y))``` multiplies the entropies by the weights and added them. (Oh and negative is done as well).
+The whole process looks like this:
+![alt text][table_pic3]
 
 Examples for (6) & (7):
 
@@ -153,15 +157,20 @@ Entropies E(a.j) or ```rowSums(y)```
 rowSums(i)
 ```
 
-Weights (stored in table z):
+Weights in table **z**:
 ```{r,echo=FALSE}
 j <- rowSums(h) / sum(rowSums(h))
 j
 ```
 
-Above two are multiplied & added and negated to get to the final total:
+Above two are multiplied & added and negated to get to the final total for E(d,a):
 ```{r, echo=FALSE}
 sum(j * rowSums(i) * -1)
+```
+
+Lastly, the Infogain is E(d) - E(d,a) which is:
+```{r, echo=FALSE}
+entropy(dataset$answer) - sum(j * rowSums(i) * -1)
 ```
 
 Examples asked for in the assignment (apaprently R-Markdown rounds a little differently than the RStudio console):
@@ -195,7 +204,42 @@ decide <- function(inputDF, col)
 }
 ```
 
+I'm not going to go too deeply into the explanation on this one.  I think it's somewhat self-expnatory.
 
+Basically, the function takes a data frame and the reference column to compage information gains from all the other columns against.  
+
+After setting up a few helper vectors and variables, the function simply iterates through each of the columns while doing the infogain(reference column, current column).
+
+The function stores both the infogain values and column names in a dataframe called "decideDF".  
+
+When it's gone through all the columns, it returns a list with he first element being the column number with the greatest infogain (by using which.max()) and the actual columns and the respective infogains.
+
+A few of things to mention:
+
+1.  I tried really, really hard to use one of the apply() family of functions to try and do this without the iterations but I kept running into errors.  I would love to get that solution.
+
+2.  I think I could've created a much more elegant solution here but I'm going away for the weekend and need to turn the assignment in Fri Sept 12th.
+
+3. It was only after writing this function that I had to go back to the infogain() function and put in the special case for checking if the vectors are the same.
+    + You you can see, since I iterate through all the columns, I will always try to do the infogain for the reference vector and itself.  Infogain in this case should be 0. (You shouldn't 'gain' anything if you subset back on the same criteria.)
+    What actually happened in my original infogain() function was that E(d) gave  you a valid number but when I tried to do entropy(d,d) I got 0.  Why?  because I put a catch for the infinities associated with log2(0). Therefore, the infogain = E(d) - E(d,a) was reverting to simply E(d) which was NOT 0 and this was wrong.
+    After puzzling through it, there were two solutions I could see: Either I did not account for the infinities and allow the infogain() function to return NaN or I could put a test in the very begining of the infogain() function to check if the vectors are exactly the same.  I chose the latter.
+
+********
+**Lastly, let's see if the outputs match the expected ones:**
+
+```{r}
+(entropy(dataset$answer))
+
+(infogain(dataset$answer, dataset$attr1))
+
+(infogain(dataset$answer, dataset$attr2))
+
+(infogain(dataset$answer, dataset$attr3))
+
+(decide(dataset,4))
+```
 
 [table_pic]: https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/table_pic.JPG
 [table_pic2]: https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/table_pic2.JPG
+[table_pic3]: https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/table_pic3.JPG

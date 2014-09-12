@@ -1,10 +1,10 @@
 
 # Sandesh Sadalge IS 607 Project 1 - Entropy
 
-#location.data <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
-location.data <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
+#fileLoc <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
+fileLoc <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
 
-dataset <- read.table(file = location.data, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+dataset <- read.table(file = fileLoc, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
 entropy <- function (d)
 {
@@ -56,5 +56,14 @@ decide <- function(inputDF, col)
 (entropy(dataset$answer))
 
 (infogain(dataset$answer, dataset$attr1))
+(infogain(dataset$answer, dataset$attr2))
+(infogain(dataset$answer, dataset$attr3))
 
 (decide(dataset,4))
+
+
+
+
+
+library(RCurl)
+? getURL
