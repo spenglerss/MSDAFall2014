@@ -1,8 +1,13 @@
 
 # Sandesh Sadalge IS 607 Project 1 - Entropy
 
-#fileLoc <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
-fileLoc <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
+# Only the code is below.  Plese see the R-Markdown I made for the full explanations.
+# After realizing I was commenting up the code so much that it was hard to read, I decided to make an R-Markdown file to explain everything I was thinking when I tackled this project
+# R-Markdown Location: 
+
+
+fileLoc <- "https://raw.githubusercontent.com/spenglerss/MSDAFall2014/master/IS%20607%20Data%20Acquisition/P1_Entropy/entropy-test-file.csv"
+#fileLoc <- "C:/Users/ssadalge/Documents/GitHub/MSDAFall2014/IS 607 Data Acquisition/P1_Entropy/entropy-test-file.csv"
 
 dataset <- read.table(file = fileLoc, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
@@ -60,10 +65,3 @@ decide <- function(inputDF, col)
 (infogain(dataset$answer, dataset$attr3))
 
 (decide(dataset,4))
-
-
-
-
-
-library(RCurl)
-? getURL

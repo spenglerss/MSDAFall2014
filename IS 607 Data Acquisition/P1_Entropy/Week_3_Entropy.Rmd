@@ -93,7 +93,7 @@ infogain <- function (d, a)
 
 **Note on explanations below:** I wish I could put together a video or something to explain how I'm calculating the probabilities and entropies using tables but I'll try by best to explain using my limited R-Markdown abilities & some pictures I made in Excel:
 
-Say you have a vector **d** with partitions **d**._i_ where _i = 1 ... N_ and another vector **a** with partitions **a**._j_  where _j = 1 ... K_. Then, the infogain, **I(d,a) = E(d) - E(d,a)**.
+Say you have a vector **d** with partitions **_d.i_**    where **_i = 1 ... N_** and another vector **a** with partitions **_a.j_**    where **_j = 1 ... K_**. Then, the infogain, **I(d,a) = E(d) - E(d,a)**.
 
 You can get E(d) using the first function created which is what I did in **(2)** using ```entropy(d)```. 
 
@@ -106,7 +106,7 @@ As a reminder, you get the following entropy for ```entropy(dataset$answer)```:
 
 I realized later that I could've created another function called ```entropy(d,a)``` to do this but I opted to put the code withint the infogain() function instead. 
 
-My solution uses _table()_ again to create a 2 way table whose column names are **d**._i_ and row names are **a**._j_.  the value **(a.j,d.i)** equals the _frequency of the partitions **a.j & d.i**_
+My solution uses _table()_ again to create a 2 way table whose column names are _d.i_ and row names are _a.j_.  the value _(a.j,d.i)_ equals the _frequency of the partitions **a.j & d.i**_
 
 Something like this:
 
@@ -173,6 +173,8 @@ Lastly, the Infogain is E(d) - E(d,a) which is:
 entropy(dataset$answer) - sum(j * rowSums(i) * -1)
 ```
 
+*****
+
 Examples asked for in the assignment (apaprently R-Markdown rounds a little differently than the RStudio console):
 
 ```infogain(dataset$answer,dataset$attr1)```  = `r (infogain(dataset$answer,dataset$attr1))`
@@ -181,7 +183,7 @@ Examples asked for in the assignment (apaprently R-Markdown rounds a little diff
 
 ```infogain(dataset$answer,dataset$attr3)``` = `r (infogain(dataset$answer,dataset$attr3))`
 
-***
+****
 
 **C)** Create the **decide()** function
 
@@ -206,24 +208,22 @@ decide <- function(inputDF, col)
 
 I'm not going to go too deeply into the explanation on this one.  I think it's somewhat self-expnatory.
 
-Basically, the function takes a data frame and the reference column to compage information gains from all the other columns against.  
+Basically, the function takes a data frame and the reference column to compare information gains from all the other columns against.  
 
-After setting up a few helper vectors and variables, the function simply iterates through each of the columns while doing the infogain(reference column, current column).
+After setting up a helper vector and variable, the function simply iterates through each of the columns and calling "infogain(reference column, current column)"."
 
-The function stores both the infogain values and column names in a dataframe called "decideDF".  
+The function stores both the infogain values and column names in a dataframe called _decideDF_.
 
-When it's gone through all the columns, it returns a list with he first element being the column number with the greatest infogain (by using which.max()) and the actual columns and the respective infogains.
+When it's gone through all the columns, it returns a list with the first element being the column number with the greatest infogain (using _which.max()_ and the actual columns and their respective infogain values.
 
 A few of things to mention:
 
-1.  I tried really, really hard to use one of the apply() family of functions to try and do this without the iterations but I kept running into errors.  I would love to get that solution.
+1.  I tried really hard to use one of the _apply()_ family of functions to try and do this without the iterations but I kept running into errors.  I would love to get that solution.
 
-2.  I think I could've created a much more elegant solution here but I'm going away for the weekend and need to turn the assignment in Fri Sept 12th.
-
-3. It was only after writing this function that I had to go back to the infogain() function and put in the special case for checking if the vectors are the same.
-    + You you can see, since I iterate through all the columns, I will always try to do the infogain for the reference vector and itself.  Infogain in this case should be 0. (You shouldn't 'gain' anything if you subset back on the same criteria.)
-    What actually happened in my original infogain() function was that E(d) gave  you a valid number but when I tried to do entropy(d,d) I got 0.  Why?  because I put a catch for the infinities associated with log2(0). Therefore, the infogain = E(d) - E(d,a) was reverting to simply E(d) which was NOT 0 and this was wrong.
-    After puzzling through it, there were two solutions I could see: Either I did not account for the infinities and allow the infogain() function to return NaN or I could put a test in the very begining of the infogain() function to check if the vectors are exactly the same.  I chose the latter.
+2. It was after writing this function that I had to go back to the original _infogain()_ function I wrote and put in the special case for checking if the vectors are the same.
+    + Since I iterate through all the columns, I will always try to do the infogain for the reference vector and itself.  Infogain in this case should be 0. (You shouldn't 'gain' anything if you subset back on the same criteria.)
+    What actually happened in my original infogain() function was that E(d) gave  you a valid number but when I tried to do entropy(d,d) I got 0.  Why?  because I put a catch for the infinities associated with log2(0) which made E(d,a) = 0 . Therefore, the infogain = E(d) - E(d,a) was reverting to simply E(d) which was wrong.
+    After puzzling through it, there were two solutions I could see: Either I do not account for the infinities and allow the infogain() function to return NaN or I could put a test in the very begining of the infogain() function to check if the vectors are exactly the same.  I chose the latter.
 
 ********
 **Lastly, let's see if the outputs match the expected ones:**
