@@ -1,4 +1,4 @@
-# Sandesh Sadalge Week 2 Quiz
+# Sandesh Sadalge Week 3 Quiz
 
 # Question 1
 sample.vector <- c(2,2,5,7,18,200,200,54,34,87,29,29,21,21,64,28,71,81,81,95)

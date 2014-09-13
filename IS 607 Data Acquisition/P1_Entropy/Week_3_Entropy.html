@@ -71,6 +71,14 @@ dataset &lt;- read.csv(text = getURL(fileLoc))</code></pre>
 ## 3     0     A     2      0
 ## 4     0     A     1      0
 ## 5     0     A     1      0</code></pre>
+<pre class="r"><code>summary(dataset)</code></pre>
+<pre><code>##      attr1     attr2       attr3           answer     
+##  Min.   :0.0   A:360   Min.   :0.000   Min.   :0.000  
+##  1st Qu.:0.0   B:340   1st Qu.:0.000   1st Qu.:0.000  
+##  Median :0.0   C:300   Median :1.000   Median :0.000  
+##  Mean   :0.4           Mean   :0.991   Mean   :0.424  
+##  3rd Qu.:1.0           3rd Qu.:2.000   3rd Qu.:1.000  
+##  Max.   :1.0           Max.   :2.000   Max.   :1.000</code></pre>
 <pre class="r"><code>str(dataset)</code></pre>
 <pre><code>## 'data.frame':    1000 obs. of  4 variables:
 ##  $ attr1 : int  0 0 0 0 0 0 0 0 0 0 ...
@@ -183,6 +191,23 @@ dataset &lt;- read.csv(text = getURL(fileLoc))</code></pre>
 <p>Here’s the code:</p>
 <pre class="r"><code>decide &lt;- function(inputDF, col)
 {
+  x &lt;- apply(inputDF,2,infogain,inputDF[,col])
+  decide &lt;- list(max=which.max(x), gains=x)
+}</code></pre>
+<p>After hours of trying to figure out how to do this using <em>apply()</em>, <strong><em>I finally got it!</em></strong></p>
+<p>The explanation is pretty easy. You simply <em>apply()</em> the function <em>infogain()</em> to each of the columns in the inputDF against the reference column. I know the statement is really simple but boy did it take me forever to finally figure out why and how to get it right!</p>
+<p>The <em>apply()</em> outputs a vector assigned, to x, which allows you to easily lookup the maximum value using <em>which.max()</em>.</p>
+<p>It’s a simple thing then, to return a list with the maximum infogain column number and the list of infogains by column as the assignment asks for.</p>
+<pre><code>Oh, and last note:
+
+It was after writing this function that I had to go back to the original infogain() function I wrote and put in the special case for checking if the vectors are the same. The reason is that since I iterate through all the columns, I will always try to do the infogain for the reference vector and itself.  Infogain in this case should be 0. (You shouldn't 'gain' anything if you subset back on the same criteria.)
+
+What actually happened in my original infogain() function was that E(d) gave a valid number but when I tried to do entropy(d,d) it rerutned 0.  Why?  because I put a catch for the infinities associated with log2(0) which made E(d,a) = 0 . Therefore, the infogain = E(d) - E(d,a) was reverting to simply E(d) which was wrong.
+
+After puzzling through it, there were two solutions I could see: Either I do not account for the infinities and allow the infogain() function to return NaN or I could put a test in the very begining of the infogain() function to check if the vectors are exactly the same.  I chose the latter.</code></pre>
+<p>Here is the original function I wrote and glad I didn’t submit:</p>
+<pre><code>decide2 &lt;- function(inputDF, col)
+{
   decideDF &lt;- data.frame(colnames=colnames(inputDF))
   n &lt;- length(decideDF$colnames)
   infogain.values &lt;- rep(0, n)
@@ -193,23 +218,11 @@ dataset &lt;- read.csv(text = getURL(fileLoc))</code></pre>
   
   decideDF &lt;- data.frame(colnames=decideDF$colnames,infogain=infogain.values)
   
-  decide &lt;- list(max=which.max(infogain.values), gains=decideDF)
+  decide2 &lt;- list(max=which.max(infogain.values), gains=decideDF)
 }</code></pre>
-<p>I’m not going to go too deeply into the explanation on this one. I think it’s somewhat self-expnatory.</p>
-<p>Basically, the function takes a data frame and the reference column to compare information gains from all the other columns against.</p>
-<p>After setting up a helper vector and variable, the function simply iterates through each of the columns and calling “infogain(reference column, current column)”.&quot;</p>
-<p>The function stores both the infogain values and column names in a dataframe called <em>decideDF</em>.</p>
-<p>When it’s gone through all the columns, it returns a list with the first element being the column number with the greatest infogain (using <em>which.max()</em> and the actual columns and their respective infogain values.</p>
-<p>A few of things to mention:</p>
-<ol style="list-style-type: decimal">
-<li><p>I tried really hard to use one of the <em>apply()</em> family of functions to try and do this without the iterations but I kept running into errors. I would love to get that solution.</p></li>
-<li>It was after writing this function that I had to go back to the original <em>infogain()</em> function I wrote and put in the special case for checking if the vectors are the same.
-<ul>
-<li>Since I iterate through all the columns, I will always try to do the infogain for the reference vector and itself. Infogain in this case should be 0. (You shouldn’t ‘gain’ anything if you subset back on the same criteria.) What actually happened in my original infogain() function was that E(d) gave you a valid number but when I tried to do entropy(d,d) I got 0. Why? because I put a catch for the infinities associated with log2(0) which made E(d,a) = 0 . Therefore, the infogain = E(d) - E(d,a) was reverting to simply E(d) which was wrong. After puzzling through it, there were two solutions I could see: Either I do not account for the infinities and allow the infogain() function to return NaN or I could put a test in the very begining of the infogain() function to check if the vectors are exactly the same. I chose the latter.</li>
-</ul></li>
-</ol>
 <hr />
-<p><strong>Lastly, let’s see if the outputs match the expected ones:</strong></p>
+<div id="lastly-lets-see-if-the-outputs-match-the-expected-ones" class="section level3">
+<h3>Lastly, let’s see if the outputs match the expected ones:</h3>
 <pre class="r"><code>(entropy(dataset$answer))</code></pre>
 <pre><code>## [1] 0.9833</code></pre>
 <pre class="r"><code>(infogain(dataset$answer, dataset$attr1))</code></pre>
@@ -220,14 +233,13 @@ dataset &lt;- read.csv(text = getURL(fileLoc))</code></pre>
 <pre><code>## [1] 0.002433</code></pre>
 <pre class="r"><code>(decide(dataset,4))</code></pre>
 <pre><code>## $max
-## [1] 2
+## attr2 
+##     2 
 ## 
 ## $gains
-##   colnames  infogain
-## 1    attr1 2.412e-05
-## 2    attr2 2.599e-01
-## 3    attr3 2.433e-03
-## 4   answer 0.000e+00</code></pre>
+##     attr1     attr2     attr3    answer 
+## 2.412e-05 2.599e-01 2.433e-03 0.000e+00</code></pre>
+</div>
 
 
 </div>

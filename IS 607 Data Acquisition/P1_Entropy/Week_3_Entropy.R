@@ -1,4 +1,3 @@
-
 # Sandesh Sadalge IS 607 Project 1 - Entropy
 
 # Only the code is below.  Plese see the R-Markdown I made for the full explanations.
@@ -44,6 +43,28 @@ infogain <- function (d, a)
 
 decide <- function(inputDF, col)
 {
+  x <- apply(inputDF,2,infogain,inputDF[,col])
+  decide <- list(max=which.max(x), gains=x)
+
+}
+
+# Check to see if the outputs are as expected (from assignment sheet)
+
+(entropy(dataset$answer))
+
+(infogain(dataset$answer, dataset$attr1))
+
+(infogain(dataset$answer, dataset$attr2))
+
+(infogain(dataset$answer, dataset$attr3))
+
+(decide(dataset,4))
+
+
+# My old decide() function that didn't use apply():
+
+decide2 <- function(inputDF, col)
+{
   decideDF <- data.frame(colnames=colnames(inputDF))
   n <- length(decideDF$colnames)
   infogain.values <- rep(0, n)
@@ -57,11 +78,4 @@ decide <- function(inputDF, col)
   decide <- list(max=which.max(infogain.values), gains=decideDF)
 }
 
-
-(entropy(dataset$answer))
-
-(infogain(dataset$answer, dataset$attr1))
-(infogain(dataset$answer, dataset$attr2))
-(infogain(dataset$answer, dataset$attr3))
-
-(decide(dataset,4))
+(decide2(dataset,4))

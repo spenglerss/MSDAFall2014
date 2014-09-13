@@ -2,7 +2,7 @@
 title: "Week 3 Entropy Project"
 author: "Sandesh Sadalge"
 date: "Fri, Sept 12, 2014"
-output: html_document
+output: word_document
 ---
 
 **Dataset**
@@ -22,6 +22,7 @@ dataset <- read.csv(text = getURL(fileLoc))
 Obligatory summary information of the dataset.  I think str() gives you a little more informative output for our purposes:
 ```{r}
 head(dataset, n=5)
+summary(dataset)
 str(dataset)
 ```
 
@@ -197,9 +198,34 @@ Examples asked for in the assignment (apaprently R-Markdown rounds a little diff
 **C)** Create the **decide()** function
 
 Here's the code:
-
 ```{r}
 decide <- function(inputDF, col)
+{
+  x <- apply(inputDF,2,infogain,inputDF[,col])
+  decide <- list(max=which.max(x), gains=x)
+}
+```
+
+After hours of trying to figure out how to do this using _apply()_, **_I finally got it!_**
+
+The explanation is pretty easy.  You simply _apply()_ the function _infogain()_ to each of the columns in the inputDF against the reference column. I know the statement is really simple but boy did it take me forever to finally figure out why and how to get it right!
+
+The _apply()_ outputs a vector assigned, to x, which allows you to easily lookup the maximum value using _which.max()_.
+
+It's a simple thing then, to return a list with the maximum infogain column number and the list of infogains by column as the assignment asks for.
+
+    Oh, and last note:
+    
+    It was after writing this function that I had to go back to the original infogain() function I wrote and put in the special case for checking if the vectors are the same. The reason is that since I iterate through all the columns, I will always try to do the infogain for the reference vector and itself.  Infogain in this case should be 0. (You shouldn't 'gain' anything if you subset back on the same criteria.)
+
+    What actually happened in my original infogain() function was that E(d) gave a valid number but when I tried to do entropy(d,d) it rerutned 0.  Why?  because I put a catch for the infinities associated with log2(0) which made E(d,a) = 0 . Therefore, the infogain = E(d) - E(d,a) was reverting to simply E(d) which was wrong.
+    
+    After puzzling through it, there were two solutions I could see: Either I do not account for the infinities and allow the infogain() function to return NaN or I could put a test in the very begining of the infogain() function to check if the vectors are exactly the same.  I chose the latter.
+
+Here is the original function I wrote and glad I didn't submit:
+
+```
+decide2 <- function(inputDF, col)
 {
   decideDF <- data.frame(colnames=colnames(inputDF))
   n <- length(decideDF$colnames)
@@ -211,31 +237,12 @@ decide <- function(inputDF, col)
   
   decideDF <- data.frame(colnames=decideDF$colnames,infogain=infogain.values)
   
-  decide <- list(max=which.max(infogain.values), gains=decideDF)
+  decide2 <- list(max=which.max(infogain.values), gains=decideDF)
 }
 ```
 
-I'm not going to go too deeply into the explanation on this one.  I think it's somewhat self-expnatory.
-
-Basically, the function takes a data frame and the reference column to compare information gains from all the other columns against.  
-
-After setting up a helper vector and variable, the function simply iterates through each of the columns and calling "infogain(reference column, current column)"."
-
-The function stores both the infogain values and column names in a dataframe called _decideDF_.
-
-When it's gone through all the columns, it returns a list with the first element being the column number with the greatest infogain (using _which.max()_ and the actual columns and their respective infogain values.
-
-A few of things to mention:
-
-1.  I tried really hard to use one of the _apply()_ family of functions to try and do this without the iterations but I kept running into errors.  I would love to get that solution.
-
-2. It was after writing this function that I had to go back to the original _infogain()_ function I wrote and put in the special case for checking if the vectors are the same.
-    + Since I iterate through all the columns, I will always try to do the infogain for the reference vector and itself.  Infogain in this case should be 0. (You shouldn't 'gain' anything if you subset back on the same criteria.)
-    What actually happened in my original infogain() function was that E(d) gave  you a valid number but when I tried to do entropy(d,d) I got 0.  Why?  because I put a catch for the infinities associated with log2(0) which made E(d,a) = 0 . Therefore, the infogain = E(d) - E(d,a) was reverting to simply E(d) which was wrong.
-    After puzzling through it, there were two solutions I could see: Either I do not account for the infinities and allow the infogain() function to return NaN or I could put a test in the very begining of the infogain() function to check if the vectors are exactly the same.  I chose the latter.
-
 ********
-**Lastly, let's see if the outputs match the expected ones:**
+### Lastly, let's see if the outputs match the expected ones:
 
 ```{r}
 (entropy(dataset$answer))
